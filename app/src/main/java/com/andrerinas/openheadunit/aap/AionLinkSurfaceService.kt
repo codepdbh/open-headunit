@@ -8,9 +8,12 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
+import android.os.SystemClock
 import android.view.Surface
 import com.andrerinas.openheadunit.App
+import com.andrerinas.openheadunit.aap.protocol.messages.TouchEvent
 import com.andrerinas.openheadunit.connection.CommManager
+import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,12 +28,14 @@ class AionLinkSurfaceService : Service() {
             private set
         private const val ATTACH = 1
         private const val DETACH = 2
+        private const val TOUCH = 3
         private const val STATUS = 10
     }
 
     private var surface: Surface? = null
     private var owner: IBinder? = null
     private var death: IBinder.DeathRecipient? = null
+    private var focusGeneration = 0
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val handler = Handler(Looper.getMainLooper()) { message ->
         when (message.what) {
@@ -60,6 +65,7 @@ class AionLinkSurfaceService : Service() {
                 true
             }
             DETACH -> { if (message.replyTo?.binder == owner) detach(); true }
+            TOUCH -> { if (active && message.replyTo?.binder == owner) handleTouch(message.data); true }
             else -> false
         }
     }
@@ -81,6 +87,7 @@ class AionLinkSurfaceService : Service() {
         when (state) {
             is CommManager.ConnectionState.Connected -> comm.startHandshake()
             is CommManager.ConnectionState.HandshakeComplete -> comm.startReading()
+            is CommManager.ConnectionState.TransportStarted -> requestVideoFocus()
             else -> Unit
         }
     }
@@ -91,6 +98,7 @@ class AionLinkSurfaceService : Service() {
 
     private fun detach() {
         active = false
+        focusGeneration++
         owner?.let { token -> death?.let { token.unlinkToDeath(it, 0) } }
         owner = null; death = null
         surface?.let {
@@ -98,6 +106,31 @@ class AionLinkSurfaceService : Service() {
             it.release()
         }
         surface = null
+    }
+
+    private fun requestVideoFocus() {
+        val generation = ++focusGeneration
+        val component = App.provide(this)
+        val handler = Handler(Looper.getMainLooper())
+        for (delay in longArrayOf(0, 1000, 3000)) {
+            handler.postDelayed({
+                if (active && generation == focusGeneration &&
+                    component.commManager.connectionState.value is CommManager.ConnectionState.TransportStarted &&
+                    (delay == 0L || component.videoDecoder.lastFrameRenderedMs == 0L)) {
+                    component.commManager.retakeVideoFocusForKeyframe()
+                }
+            }, delay)
+        }
+    }
+
+    private fun handleTouch(data: Bundle) {
+        val ids = data.getIntArray("ids") ?: return
+        val xs = data.getIntArray("xs") ?: return
+        val ys = data.getIntArray("ys") ?: return
+        val mapped = AionLinkTouchMapper.map(data.getInt("action"), ids, xs, ys,
+            data.getInt("width"), data.getInt("height"),
+            HeadUnitScreenConfig.getNegotiatedWidth(), HeadUnitScreenConfig.getNegotiatedHeight()) ?: return
+        App.provide(this).commManager.send(TouchEvent(SystemClock.elapsedRealtime(), mapped.action, mapped.index, mapped.pointers))
     }
 
     private fun reply(target: Messenger?, ok: Boolean) {

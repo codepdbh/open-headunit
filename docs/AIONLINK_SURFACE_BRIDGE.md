@@ -16,7 +16,11 @@ cannot be assumed to interoperate. Do not publish signing keys.
 While the bridge has an attached surface, this fork suppresses its normal
 projection activity raise and the decoder pause on a screen-off event. Other
 teardown and sleep paths remain in effect. Disconnecting the client detaches
-the target surface. The bridge does not implement touch forwarding.
+the target surface. After the transport starts, the bridge requests video
+focus and retries while no frame has been reported. It also accepts touch
+events from the attached client, validates them and scales frame coordinates
+to the negotiated video size. This assumes a direct scale; actual geometry,
+touch delivery and multitouch remain unverified.
 
 The experimental APK compiled and its manifest was inspected. **No end-to-end
 run has verified** decoder-to-encoder surface compatibility, Android Auto
