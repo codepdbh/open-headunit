@@ -57,6 +57,10 @@
         android:name="com.andrerinas.openheadunit.permission.NAVIGATION_UPDATE"
         android:protectionLevel="signature" />
 
+    <permission
+        android:name="com.andrerinas.openheadunit.permission.AIONLINK_SURFACE"
+        android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -118,6 +122,7 @@
 
         <activity
             android:name=".aap.AapProjectionActivity"
+            android:allowEmbedded="true"
             android:configChanges="uiMode|orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:hardwareAccelerated="true"
@@ -274,6 +279,9 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
+        <service android:name=".aap.AionLinkSurfaceService"
+            android:exported="true"
+            android:permission="com.andrerinas.openheadunit.permission.AIONLINK_SURFACE" />
         <service android:name=".location.GpsLocationService" />
         <service
             android:name=".main.FloatingButtonService"

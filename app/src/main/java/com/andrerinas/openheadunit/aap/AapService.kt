@@ -788,7 +788,7 @@ class AapService : Service() {
                 Intent.ACTION_SCREEN_OFF -> {
                     screenOffTimestamp = SystemClock.elapsedRealtime()
                     AppLog.i("WakeDetect: SCREEN_OFF")
-                    commManager.pauseForSleep()
+                    if (!AionLinkSurfaceService.active) commManager.pauseForSleep()
                     maybeInferredAccPowerLoss { goAsync() }
                 }
                 Intent.ACTION_SCREEN_ON -> {
@@ -1612,6 +1612,7 @@ class AapService : Service() {
      *   call screen's own full-screen intent.
      */
     private fun launchAapProjectionActivity(allowNotificationFallback: Boolean = true): Boolean {
+        if (AionLinkSurfaceService.active) return false
         if (App.isPiPActive) {
             AppLog.i("AapService: Skipping projection launch because PiP is active")
             return false

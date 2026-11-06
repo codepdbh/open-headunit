@@ -1,5 +1,10 @@
 # Open Headunit
 
+> **AionLink experimental fork:** This fork adds a signature-protected video
+> surface bridge for [AionLink Open](https://github.com/codepdbh/aionlink-open).
+> Screen-off projection, audio, touch and vehicle compatibility are not yet
+> verified. See [bridge notes](docs/AIONLINK_SURFACE_BRIDGE.md).
+
 <a href='https://play.google.com/store/apps/details?id=com.andrerinas.headunitrevived'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' width="200"/></a>
 <a href='http://www.amazon.com/gp/mas/dl/android?p=com.andrerinas.headunitrevived'><img alt='Available at Amazon Appstore' src='https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/devportal2/res/images/amazon-appstore-badge-english-black.png' width="200"/></a>
 
