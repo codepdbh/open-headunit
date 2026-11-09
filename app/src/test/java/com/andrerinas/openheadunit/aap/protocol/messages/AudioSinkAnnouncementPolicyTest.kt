@@ -47,4 +47,14 @@ class AudioSinkAnnouncementPolicyTest {
             )
         )
     }
+
+    @Test
+    fun `an AionLink audio pipe restores media and speech in Self Mode but never overrides the setting`() {
+        assertTrue(AudioSinkAnnouncementPolicy.announcesMediaAndSpeech(
+            sinkEnabled = true, isSelfModeSession = true, externalAudioSink = true))
+        assertFalse(AudioSinkAnnouncementPolicy.announcesMediaAndSpeech(
+            sinkEnabled = false, isSelfModeSession = true, externalAudioSink = true))
+        assertFalse(AudioSinkAnnouncementPolicy.announcesMediaAndSpeech(
+            sinkEnabled = true, isSelfModeSession = true, externalAudioSink = false))
+    }
 }
