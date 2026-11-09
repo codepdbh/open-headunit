@@ -190,7 +190,12 @@ internal class ServiceDiscoveryResponse(context: Context, audioConfig: AudioSess
             // the launchers run and a failed launch left it set, so a Native AA session announced
             // system sounds only and had no audio at all. See AudioSinkAnnouncementPolicy.
             val isSelfModeSession = App.provide(context).commManager.isLoopbackSession
-            if (AudioSinkAnnouncementPolicy.announcesMediaAndSpeech(audioConfig.enabled, isSelfModeSession)) {
+            val toAionLink = com.andrerinas.openheadunit.decoder.audio.AionLinkAudioSink.attached
+            com.andrerinas.openheadunit.decoder.audio.AionLinkAudioSink.noteSessionAnnouncement(
+                toAionLink && isSelfModeSession && audioConfig.enabled)
+            if (toAionLink && isSelfModeSession) AppLog.i("Self Mode with an AionLink audio pipe: announcing the " +
+                    "media and speech audio channels so their sound goes to the car instead of this phone")
+            if (AudioSinkAnnouncementPolicy.announcesMediaAndSpeech(audioConfig.enabled, isSelfModeSession, toAionLink)) {
                 val audio1 = Control.Service.newBuilder().also { service ->
                     service.id = Channel.ID_AU1
                     service.mediaSinkService = Control.Service.MediaSinkService.newBuilder().also {

@@ -13,6 +13,10 @@ object AudioSinkAnnouncementPolicy {
      * Why Self Mode drops them at all is not recorded anywhere in this repo and is not settled;
      * only the gating is. A session that is not Self Mode's must never be affected by it.
      */
-    fun announcesMediaAndSpeech(sinkEnabled: Boolean, isSelfModeSession: Boolean): Boolean =
-        sinkEnabled && !isSelfModeSession
+    fun announcesMediaAndSpeech(sinkEnabled: Boolean, isSelfModeSession: Boolean,
+                                externalAudioSink: Boolean = false): Boolean =
+        sinkEnabled && (!isSelfModeSession || externalAudioSink)
+
+    // externalAudioSink: an AionLink client attached a PCM pipe, so the decoded sound leaves this phone
+    // for the car instead of playing back on the speaker the projected phone itself uses.
 }

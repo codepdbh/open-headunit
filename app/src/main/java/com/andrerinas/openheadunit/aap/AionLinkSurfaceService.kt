@@ -8,11 +8,13 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
+import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.view.Surface
 import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.aap.protocol.messages.TouchEvent
 import com.andrerinas.openheadunit.connection.CommManager
+import com.andrerinas.openheadunit.decoder.audio.AionLinkAudioSink
 import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,9 +44,12 @@ class AionLinkSurfaceService : Service() {
             ATTACH -> {
                 @Suppress("DEPRECATION")
                 val next = message.data.getParcelable<Surface>("surface")
+                @Suppress("DEPRECATION")
+                val audioPipe = message.data.getParcelable<ParcelFileDescriptor>("audio")
                 val client = message.replyTo
                 if (next == null || !next.isValid || client == null || surface != null) {
                     next?.release()
+                    try { audioPipe?.close() } catch (_: java.io.IOException) { }
                     reply(client, false)
                 } else {
                     val token = client.binder
@@ -56,10 +61,13 @@ class AionLinkSurfaceService : Service() {
                         owner = token; death = watcher; surface = next
                         App.provide(this).videoDecoder.setSurface(next)
                         active = true
+                        // Optional: the client's pipe for decoded PCM, so sound reaches the car instead of the phone.
+                        audioPipe?.let { AionLinkAudioSink.attach(it) }
                         scope.launch { advance(App.provide(this@AionLinkSurfaceService).commManager.connectionState.value) }
-                        reply(client, true)
+                        reply(client, true, audio = audioPipe != null)
                     } catch (_: Exception) {
-                        detach(); next.release(); reply(client, false)
+                        detach(); next.release(); try { audioPipe?.close() } catch (_: java.io.IOException) { }
+                        reply(client, false)
                     }
                 }
                 true
@@ -97,6 +105,7 @@ class AionLinkSurfaceService : Service() {
     override fun onDestroy() { detach(); scope.cancel(); super.onDestroy() }
 
     private fun detach() {
+        AionLinkAudioSink.detach()
         active = false
         focusGeneration++
         owner?.let { token -> death?.let { token.unlinkToDeath(it, 0) } }
@@ -133,8 +142,10 @@ class AionLinkSurfaceService : Service() {
         App.provide(this).commManager.send(TouchEvent(SystemClock.elapsedRealtime(), mapped.action, mapped.index, mapped.pointers))
     }
 
-    private fun reply(target: Messenger?, ok: Boolean) {
-        try { target?.send(Message.obtain(null, STATUS).apply { data = Bundle().apply { putBoolean("attached", ok) } }) }
+    private fun reply(target: Messenger?, ok: Boolean, audio: Boolean = false) {
+        try { target?.send(Message.obtain(null, STATUS).apply { data = Bundle().apply {
+            putBoolean("attached", ok); putBoolean("audio", ok && audio)
+        } }) }
         catch (_: android.os.RemoteException) { detach() }
     }
 }
