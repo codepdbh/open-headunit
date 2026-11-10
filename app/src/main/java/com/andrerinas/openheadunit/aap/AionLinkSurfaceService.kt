@@ -16,6 +16,7 @@ import com.andrerinas.openheadunit.aap.protocol.messages.TouchEvent
 import com.andrerinas.openheadunit.connection.CommManager
 import com.andrerinas.openheadunit.decoder.audio.AionLinkAudioSink
 import com.andrerinas.openheadunit.decoder.video.WarmRelaunchKeyframePolicy
+import com.andrerinas.openheadunit.utils.AppLog
 import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,35 @@ class AionLinkSurfaceService : Service() {
         private const val DETACH = 2
         private const val TOUCH = 3
         private const val STATUS = 10
+        /**
+         * A client that went away without coming back within this time ends the Android Auto session. Measured on
+         * 2026-11-10: with no client, Android Auto, this app and the compositor kept about 33 % CPU (of 800 %)
+         * encoding and decoding video for nobody, warming the phone until it was stopped by hand. A minute still
+         * covers a car Wi-Fi drop, which reattaches to the live session.
+         */
+        private const val IDLE_STOP_MS = 60_000L
+
+        // Process-wide: the bound service is destroyed right after its client unbinds, and a reconnect may create
+        // a new instance, so the timer must outlive one instance and be cancelled by whichever attaches next.
+        private val idleHandler = Handler(Looper.getMainLooper())
+        private var idleStop: Runnable? = null
+
+        private fun scheduleIdleStop(context: android.content.Context) {
+            cancelIdleStop()
+            val app = context.applicationContext
+            idleStop = Runnable {
+                idleStop = null
+                if (active) return@Runnable
+                AppLog.i("AionLinkSurfaceService: no client for ${IDLE_STOP_MS / 1000} s; stopping the Android Auto session")
+                try {
+                    app.startService(Intent(app, AapService::class.java).setAction(AapService.ACTION_STOP_SERVICE))
+                } catch (error: RuntimeException) {
+                    AppLog.w("AionLinkSurfaceService: could not stop the idle session: ${error.message}")
+                }
+            }.also { idleHandler.postDelayed(it, IDLE_STOP_MS) }
+        }
+
+        private fun cancelIdleStop() { idleStop?.let(idleHandler::removeCallbacks); idleStop = null }
     }
 
     private var surface: Surface? = null
@@ -59,6 +89,7 @@ class AionLinkSurfaceService : Service() {
                     }
                     try {
                         token.linkToDeath(watcher, 0)
+                        cancelIdleStop()
                         owner = token; death = watcher; surface = next
                         App.provide(this).videoDecoder.setSurface(next)
                         active = true
@@ -106,6 +137,7 @@ class AionLinkSurfaceService : Service() {
     override fun onDestroy() { detach(); scope.cancel(); super.onDestroy() }
 
     private fun detach() {
+        if (surface != null) scheduleIdleStop(this)
         AionLinkAudioSink.detach()
         active = false
         focusGeneration++
