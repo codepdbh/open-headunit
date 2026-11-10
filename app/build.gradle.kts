@@ -125,6 +125,25 @@ android {
             dimension = "distribution"
             // Default minSdk 16 from defaultConfig is used
         }
+        // Dedicated receiver for AionLink Sonda (car display through the AionLink surface bridge).
+        // Same code as github, but fixed settings, one simple screen and its own application id,
+        // so it installs next to the full app. See app/src/lite/README.md.
+        create("lite") {
+            dimension = "distribution"
+            applicationId = "org.aionlink.headunit.lite"
+            versionNameSuffix = "-lite"
+            ndk { abiFilters += "arm64-v8a" }
+            @Suppress("DEPRECATION")
+            resourceConfigurations += listOf("en", "es")
+        }
+    }
+
+    sourceSets {
+        // Lite keeps the github flavor's offline Self Mode support (dummy VPN) and adds its own files.
+        getByName("lite") {
+            java.srcDirs("src/github/java")
+            res.srcDirs("src/github/res")
+        }
     }
 
     testOptions {

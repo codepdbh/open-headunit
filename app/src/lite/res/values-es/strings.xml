@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenHeadunit Lite</string>
+    <string name="title">OpenHeadunit Lite</string>
+    <string name="lite_title">OpenHeadunit Lite para AionLink Sonda</string>
+    <string name="lite_intro">No hay nada que configurar. AionLink Sonda inicia Android Auto aquí y lo muestra en la pantalla del coche por su puente de superficie, con sonido. En los ajustes de desarrollador de Android Auto debe estar activo \"Iniciar servidor de unidad principal\" (de nuevo tras cada actualización de Android Auto o reinicio del teléfono).</string>
+    <string name="lite_grant_permissions">Conceder permisos</string>
+    <string name="lite_open_android_auto">Abrir Android Auto</string>
+    <string name="lite_stop">Detener sesión</string>
+    <string name="lite_yes">sí</string>
+    <string name="lite_no">no</string>
+    <string name="lite_status">Aviso de seguridad aceptado: %1$s\nPermisos: %2$s\nAndroid Auto instalado: %3$s\nAionLink Sonda instalada: %4$s\nSonido yendo a AionLink ahora: %5$s</string>
+    <string name="lite_license">Versión %1$s (%2$s). Basada en Open Headunit, AGPL-3.0; código de esta edición: github.com/codepdbh/open-headunit, rama openheadunit-lite.</string>
+</resources>

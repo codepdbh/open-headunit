@@ -144,6 +144,8 @@ class App : Application(), Application.ActivityLifecycleCallbacks {
         if (Build.VERSION.SDK_INT >= 26)
             com.andrerinas.openheadunit.connection.wifi.scan.WifiScanControl.initialize(this)
 
+        // Lite edition: fixed settings before anything reads them (no-op in the other flavors).
+        com.andrerinas.openheadunit.lite.LiteDefaults.apply(this)
         val settings = Settings(this) // Create a Settings instance
         AppLog.init(settings, this) // Initialize AppLog with settings for conditional logging
 

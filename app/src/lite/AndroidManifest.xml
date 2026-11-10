@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    OpenHeadunit Lite: only what AionLink Sonda uses (Self Mode, the AionLink surface bridge and the
+    automation broadcasts). The full app's entry points that would claim other system roles are
+    removed here; their code stays so the shared sources build unchanged.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Status on the lite screen: is Android Auto / AionLink Sonda installed. -->
+    <queries>
+        <package android:name="com.google.android.projection.gearhead" />
+        <package android:name="org.aionlink.open.lab" />
+    </queries>
+
+    <application>
+        <activity
+            android:name=".lite.LiteActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Not a launcher, navigation app, deep-link target or home screen in this edition. -->
+        <activity android:name=".main.MainActivity" tools:node="merge" tools:ignore="IntentFilterExportedReceiver">
+            <intent-filter tools:node="removeAll" />
+            <meta-data android:name="android.app.shortcuts" tools:node="remove" />
+        </activity>
+        <activity-alias android:name=".CarLauncherAlias" tools:node="remove" />
+
+        <!-- No USB head unit connections: AionLink Sonda carries the picture to the car. -->
+        <activity android:name=".app.UsbAttachedActivity" tools:node="merge" tools:ignore="IntentFilterExportedReceiver">
+            <intent-filter tools:node="removeAll" />
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" tools:node="remove" />
+        </activity>
+
+        <!-- Same as the github flavor: offline Self Mode gives Android Auto a network through it. -->
+        <service
+            android:name=".aap.DummyVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
