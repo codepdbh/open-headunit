@@ -15,6 +15,7 @@ import com.andrerinas.openheadunit.App
 import com.andrerinas.openheadunit.aap.protocol.messages.TouchEvent
 import com.andrerinas.openheadunit.connection.CommManager
 import com.andrerinas.openheadunit.decoder.audio.AionLinkAudioSink
+import com.andrerinas.openheadunit.decoder.video.WarmRelaunchKeyframePolicy
 import com.andrerinas.openheadunit.utils.HeadUnitScreenConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -117,16 +118,27 @@ class AionLinkSurfaceService : Service() {
         surface = null
     }
 
+    /**
+     * A fresh session starts its stream once focus is gained. A client that attaches to a session already
+     * projecting (AionLink reconnecting) gets no keyframe from a plain gain, because Android Auto already
+     * holds focus: measured 2026-11-10, the picture stayed black until the transport's own escalation cycled
+     * focus about 60 s later. So the retries, which only run while nothing has rendered on this surface,
+     * do a full release/regain cycle, the same one the warm relaunch path uses.
+     */
     private fun requestVideoFocus() {
         val generation = ++focusGeneration
         val component = App.provide(this)
         val handler = Handler(Looper.getMainLooper())
-        for (delay in longArrayOf(0, 1000, 3000)) {
+        fun current() = active && generation == focusGeneration &&
+            component.commManager.connectionState.value is CommManager.ConnectionState.TransportStarted
+        handler.post { if (current()) component.commManager.retakeVideoFocusForKeyframe() }
+        for (delay in longArrayOf(1000, 3000)) {
             handler.postDelayed({
-                if (active && generation == focusGeneration &&
-                    component.commManager.connectionState.value is CommManager.ConnectionState.TransportStarted &&
-                    (delay == 0L || component.videoDecoder.lastFrameRenderedMs == 0L)) {
-                    component.commManager.retakeVideoFocusForKeyframe()
+                if (current() && component.videoDecoder.lastFrameRenderedMs == 0L) {
+                    val cycle = component.commManager.releaseVideoFocusForKeyframe() ?: return@postDelayed
+                    handler.postDelayed({
+                        if (!component.commManager.retakeVideoFocusForKeyframe(cycle)) cycle.transport.endFocusCycle()
+                    }, WarmRelaunchKeyframePolicy.FOCUS_CYCLE_GAP_MS)
                 }
             }, delay)
         }
