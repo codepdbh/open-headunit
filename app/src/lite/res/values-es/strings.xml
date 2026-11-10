@@ -2,13 +2,25 @@
 <resources>
     <string name="app_name">OpenHeadunit Lite</string>
     <string name="title">OpenHeadunit Lite</string>
-    <string name="lite_title">OpenHeadunit Lite para AionLink Sonda</string>
-    <string name="lite_intro">No hay nada que configurar. AionLink Sonda inicia Android Auto aquí y lo muestra en la pantalla del coche por su puente de superficie, con sonido. En los ajustes de desarrollador de Android Auto debe estar activo \"Iniciar servidor de unidad principal\" (de nuevo tras cada actualización de Android Auto o reinicio del teléfono).</string>
-    <string name="lite_grant_permissions">Conceder permisos</string>
-    <string name="lite_open_android_auto">Abrir Android Auto</string>
+    <string name="lite_title">OpenHeadunit Lite</string>
+    <string name="lite_subtitle">Receptor de Android Auto para AionLink Sonda. Sin nada que configurar.</string>
+    <string name="lite_state_ready">Listo</string>
+    <string name="lite_state_ready_detail">Conecta desde AionLink Sonda. Esta app trabaja en segundo plano; no hace falta abrirla.</string>
+    <string name="lite_state_setup">Falta un paso</string>
+    <string name="lite_state_setup_detail">Completa la lista de abajo una vez en este teléfono.</string>
+    <string name="lite_state_live">Android Auto en la pantalla del coche</string>
+    <string name="lite_state_live_detail">La imagen y el sonido van al coche por AionLink Sonda.</string>
+    <string name="lite_state_running">Sesión de Android Auto abierta</string>
+    <string name="lite_state_running_detail">Esperando a que AionLink Sonda la muestre en el coche.</string>
+    <string name="lite_checklist">En este teléfono</string>
+    <string name="lite_item_notice">Aviso de seguridad</string>
+    <string name="lite_item_permissions">Permisos</string>
+    <string name="lite_item_aa">Android Auto instalado</string>
+    <string name="lite_item_sonda">AionLink Sonda instalada</string>
+    <string name="lite_action_read">Leer</string>
+    <string name="lite_action_allow">Permitir</string>
+    <string name="lite_aa_settings">Ajustes de Android Auto</string>
+    <string name="lite_hint_server">En Android Auto: menú ⋮ → «Iniciar servidor unidad princ.». De nuevo tras cada actualización de Android Auto o reinicio del teléfono.</string>
     <string name="lite_stop">Detener sesión</string>
-    <string name="lite_yes">sí</string>
-    <string name="lite_no">no</string>
-    <string name="lite_status">Aviso de seguridad aceptado: %1$s\nPermisos: %2$s\nAndroid Auto instalado: %3$s\nAionLink Sonda instalada: %4$s\nSonido yendo a AionLink ahora: %5$s</string>
-    <string name="lite_license">Versión %1$s (%2$s). Basada en Open Headunit, AGPL-3.0; código de esta edición: github.com/codepdbh/open-headunit, rama openheadunit-lite.</string>
+    <string name="lite_license">Versión %1$s (%2$s). Basada en Open Headunit, AGPL-3.0. Código: github.com/codepdbh/open-headunit</string>
 </resources>
