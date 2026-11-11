@@ -4,9 +4,11 @@ An edition of Open Headunit that does one job: be the Android Auto receiver for 
 shows it on a GAC AION car display through the AionLink surface bridge (`AionLinkSurfaceService`, video,
 touch and sound).
 
-It installs next to the full app as `org.aionlink.headunit.lite`. AionLink Sonda uses it when it is
-installed and falls back to the full Open Headunit otherwise. Both apps must be signed with the same key as
-AionLink Sonda, because the bridge permission is `signature`.
+It installs next to the full app as `org.aionlink.headunit.lite` and shares no identifier with it: its custom
+permissions are `org.aionlink.headunit.lite.permission.AIONLINK_SURFACE` and `...NAVIGATION_UPDATE` (manifest
+placeholder `permissionPrefix`), so the full app, whoever signed it, can stay installed. AionLink Sonda talks
+only to this package. Lite and AionLink Sonda must be signed with the same key, because the bridge permission is
+`signature`; install Lite first, since it defines that permission.
 
 What differs from the `github` flavor; the shared code is unchanged:
 

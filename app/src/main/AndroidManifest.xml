@@ -54,11 +54,11 @@
         android:required="false" />
 
     <permission
-        android:name="com.andrerinas.openheadunit.permission.NAVIGATION_UPDATE"
+        android:name="${permissionPrefix}.permission.NAVIGATION_UPDATE"
         android:protectionLevel="signature" />
 
     <permission
-        android:name="com.andrerinas.openheadunit.permission.AIONLINK_SURFACE"
+        android:name="${permissionPrefix}.permission.AIONLINK_SURFACE"
         android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
@@ -281,7 +281,7 @@
         </service>
         <service android:name=".aap.AionLinkSurfaceService"
             android:exported="true"
-            android:permission="com.andrerinas.openheadunit.permission.AIONLINK_SURFACE" />
+            android:permission="${permissionPrefix}.permission.AIONLINK_SURFACE" />
         <service android:name=".location.GpsLocationService" />
         <service
             android:name=".main.FloatingButtonService"

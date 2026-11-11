@@ -94,6 +94,10 @@ android {
         // changed to Open Headunit. The code package and namespace stay openheadunit, so the
         // applicationId deliberately differs from the namespace, like com.google.talk for Hangouts.
         applicationId = "com.andrerinas.headunitrevived"
+        // Prefix of the custom permissions this app defines. Each edition owns its own names so the
+        // full app and OpenHeadunit Lite never define the same permission (Android refuses the second
+        // install when two packages signed with different keys declare one).
+        manifestPlaceholders["permissionPrefix"] = "com.andrerinas.openheadunit"
         minSdk = 16
         targetSdk = 36
         versionCode = 122
@@ -131,6 +135,7 @@ android {
         create("lite") {
             dimension = "distribution"
             applicationId = "org.aionlink.headunit.lite"
+            manifestPlaceholders["permissionPrefix"] = "org.aionlink.headunit.lite"
             versionNameSuffix = "-lite"
             ndk { abiFilters += "arm64-v8a" }
             @Suppress("DEPRECATION")
