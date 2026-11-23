@@ -54,12 +54,19 @@ class AionLinkSurfaceService : Service() {
             idleStop = Runnable {
                 idleStop = null
                 if (active) return@Runnable
-                AppLog.i("AionLinkSurfaceService: no client for ${IDLE_STOP_MS / 1000} s; stopping the Android Auto session")
-                try {
-                    app.startService(Intent(app, AapService::class.java).setAction(AapService.ACTION_STOP_SERVICE))
-                } catch (error: RuntimeException) {
-                    AppLog.w("AionLinkSurfaceService: could not stop the idle session: ${error.message}")
-                }
+                AppLog.i("AionLinkSurfaceService: no client for ${IDLE_STOP_MS / 1000} s; pausing and stopping the Android Auto session")
+                // Pause first: when the session ends, a media app that was still playing would move to the phone speaker.
+                val comm = App.provide(app).commManager
+                comm.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, isPress = true, source = "aionlink-idle")
+                comm.sendKey(android.view.KeyEvent.KEYCODE_MEDIA_PAUSE, isPress = false, source = "aionlink-idle")
+                idleHandler.postDelayed({
+                    if (active) return@postDelayed
+                    try {
+                        app.startService(Intent(app, AapService::class.java).setAction(AapService.ACTION_STOP_SERVICE))
+                    } catch (error: RuntimeException) {
+                        AppLog.w("AionLinkSurfaceService: could not stop the idle session: ${error.message}")
+                    }
+                }, 500)
             }.also { idleHandler.postDelayed(it, IDLE_STOP_MS) }
         }
 
