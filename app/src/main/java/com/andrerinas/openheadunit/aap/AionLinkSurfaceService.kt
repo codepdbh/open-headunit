@@ -33,6 +33,7 @@ class AionLinkSurfaceService : Service() {
         private const val ATTACH = 1
         private const val DETACH = 2
         private const val TOUCH = 3
+        private const val KEY = 4
         private const val STATUS = 10
         /**
          * A client that went away without coming back within this time ends the Android Auto session. Measured on
@@ -106,6 +107,7 @@ class AionLinkSurfaceService : Service() {
             }
             DETACH -> { if (message.replyTo?.binder == owner) detach(); true }
             TOUCH -> { if (active && message.replyTo?.binder == owner) handleTouch(message.data); true }
+            KEY -> { if (active && message.replyTo?.binder == owner) handleKey(message.data); true }
             else -> false
         }
     }
@@ -174,6 +176,17 @@ class AionLinkSurfaceService : Service() {
                 }
             }, delay)
         }
+    }
+
+    /**
+     * A car key (steering wheel or panel) that the client already translated to an Android key code. It enters the
+     * same path as a head unit's own keys, so Android Auto receives it only if it is in the announced key list.
+     */
+    private fun handleKey(data: Bundle) {
+        val action = data.getInt("action", -1)
+        val keyCode = data.getInt("keycode", -1)
+        if (action != 0 && action != 1 || keyCode !in 1..999) return
+        App.provide(this).commManager.sendKey(keyCode, isPress = action == 0, source = "aionlink")
     }
 
     private fun handleTouch(data: Bundle) {
