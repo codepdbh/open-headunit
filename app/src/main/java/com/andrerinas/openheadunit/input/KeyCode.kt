@@ -25,6 +25,9 @@ object KeyCode {
         KeyEvent.KEYCODE_MEDIA_PREVIOUS,
         KeyEvent.KEYCODE_SEARCH,
         KeyEvent.KEYCODE_CALL,
+        // Hang up: AionLink forwards the car's end-call key (CustomKeyEvent); without it in the announced
+        // list Android Auto would ignore that steering-wheel button.
+        KeyEvent.KEYCODE_ENDCALL,
         KeyEvent.KEYCODE_MUSIC,
         KeyEvent.KEYCODE_VOLUME_UP,
         KeyEvent.KEYCODE_VOLUME_DOWN,
